@@ -10,63 +10,116 @@ import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.receptionist.Receptionist;
 import akka.actor.typed.receptionist.ServiceKey;
 
-import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.*;
 
-public class Guardian extends AbstractBehavior<Guardian.StartFitness> {
+public class Guardian {
 
-    public static final ServiceKey<Guardian.StartFitness> guardianServiceKey =
-            ServiceKey.create(Guardian.StartFitness.class, "guardian");
+    public static final ServiceKey<InitialiseNodes> guardianServiceKey =
+            ServiceKey.create(InitialiseNodes.class, "guardian");
 
-    List<Integer> latticeProperties;
-    int numberParticles;
+    private List<Integer> latticeProperties;
+    private int numberParticles;
+    int xMax;
+    int yMax;
+    int iteration;
 
-    public Guardian(ActorContext<StartFitness> context) {
-        super(context);
+    interface Command {
     }
 
-    public Guardian(ActorContext<StartFitness> cxt, List<Integer> latticeProperties, int numberParticles) {
-        super(cxt);
-        this.latticeProperties = latticeProperties;
-        this.numberParticles = numberParticles;
-    }
+    ;
 
-    static class StartFitness {
+    static class InitialiseNodes implements Command {
         Boolean start = true;
 
-        public StartFitness() {
+        public InitialiseNodes() {
         }
     }
 
-    public static Behavior<StartFitness> create(List<Integer> latticeProperties, int numberParticles) {
+    private static class ListingResponse implements Command {
+        final Receptionist.Listing listing;
 
-        return Behaviors.setup(
-                cxt -> {
-                    cxt.getSystem()
-                            .receptionist()
-                            .tell(Receptionist.register(guardianServiceKey, cxt.getSelf()));
-                    return new Guardian(cxt, latticeProperties, numberParticles).behavior(cxt);
-                }
-        );
+        private ListingResponse(Receptionist.Listing listing) {
+            this.listing = listing;
+        }
     }
 
-    private Behavior<StartFitness> behavior(ActorContext<StartFitness> cxt) {
+    private final ActorRef<Receptionist.Listing> listingResponseAdapter;
+    private final ActorContext<Command> context;
+
+
+    public Guardian(ActorContext<Command> cxt, List<Integer> latticeProperties, int numberParticles) {
+        this.context = cxt;
+        this.latticeProperties = latticeProperties;
+        this.numberParticles = numberParticles;
+        this.listingResponseAdapter =
+                cxt.messageAdapter(Receptionist.Listing.class, ListingResponse::new);
+    }
+
+    public static Behavior<Command> create(List<Integer> latticeProperties, int numberParticles) {
+
+        return Behaviors.setup(cxt -> new Guardian(cxt, latticeProperties, numberParticles).behavior(cxt));
+    }
+
+    private Behavior<Command> behavior(ActorContext<Command> cxt) {
         // todo: we need to spawn the nodes here
 
-        Map<ActorRef<NodeParticle.RequestCalculateFitness>, List<Double>> nodes = new HashMap<>();
-
+        List<ActorRef<NodeParticle.Request>> nodes = new ArrayList<>();
         Random feature = new Random();
 
-        return Behaviors.receive(StartFitness.class).onMessage(
-                StartFitness.class, this::onSpawning).build();
+        LocalTime now = LocalTime.now();
+
+        this.iteration = 1;
+
+        for (int i = 0; i < this.numberParticles; i++) {
+            ActorRef<NodeParticle.Request> nodeParticle =
+                    cxt.spawn(NodeParticle.create("Particle" + i, xMax, yMax), "name" + i);
+            nodes.add(nodeParticle);
+        //    nodeParticle.tell(new NodeParticle.RequestCalculateFitness());
+        }
+
+        // attempting to wait for all nodes to be created
+
+        if ((nodes.size() >= this.numberParticles - 10) ||
+                (LocalTime.now()
+                        .minus(Duration.ofSeconds(now.getSecond()))
+                        .equals(LocalTime
+                                .of(0,0,5)))) {
+
+            nodes.forEach( node  ->
+                    node.tell(new NodeParticle.RequestCalculateFitness())
+                    );
+        }
+
+        cxt
+                .getSystem()
+                .receptionist()
+                .tell(Receptionist.find(NodeParticle.nodeServiceKey, listingResponseAdapter));
+
+        return Behaviors.receive(Command.class).onMessage(
+                InitialiseNodes.class, respnse -> onSpawning(cxt))
+                .onMessage(ListingResponse.class, respnse -> onListing(cxt))
+                .build();
     }
 
-    private Behavior<StartFitness> onSpawning(StartFitness a) {
-        return this;
-    }
+    private Behavior<Command> onListing(ActorContext<Command> cxt) {
 
-    @Override
-    public Receive<Guardian.StartFitness> createReceive() {
+        // tell the particles to broadcast their properties
+
         return null;
     }
+
+
+    private Behavior<Command> onSpawning(ActorContext<Command> cxt) {
+        return Behaviors.same();
+    }
+
+//    @Override
+//    public Receive<Command> createReceive() {
+//        System.err.println("Helllloooooo");
+//     return    newReceiveBuilder()
+//                .onMessage(InitialiseNodes.class, this::onSpawning)
+//                .build();
+//    }
 }

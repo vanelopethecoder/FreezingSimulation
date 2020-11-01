@@ -1,8 +1,14 @@
-Guardian.class
-Guardian$StartFitness.class
+com\akka\pso\Device.class
+com\akka\pso\Guardian$InitialiseNodes.class
+com\akka\pso\Guardian.class
+com\akka\pso\Device$TemperatureRecorded.class
+com\akka\pso\Device$Command.class
 NodeModels\NodeParticle.class
 com\akka\pso\ApplicationMain.class
 FunctionUtil.class
 NodeModels\NodeParticle$Request.class
+com\akka\pso\Device$ReadTemperature.class
 NodeModels\NodeParticle$RequestCalculateFitness.class
+com\akka\pso\Device$RecordTemperature.class
+com\akka\pso\Device$RespondTemperature.class
 NodeModels\ParticleProperties.class

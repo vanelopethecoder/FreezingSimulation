@@ -7,10 +7,16 @@ public class ParticleProperties {
 
     BigDecimal velocity;
     List<BigDecimal> positionVector;
+    int x;
+    int y;
+    ParticleProperties p_best_properties;
 
     public ParticleProperties(BigDecimal velocity, List<BigDecimal> positionVector) {
         this.velocity = velocity;
         this.positionVector = positionVector;
+    }
+
+    public ParticleProperties() {
     }
 
     public BigDecimal getVelocity() {

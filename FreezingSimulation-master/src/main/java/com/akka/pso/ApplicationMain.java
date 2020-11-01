@@ -17,8 +17,12 @@ public class ApplicationMain {
         List<Integer> latticeProperties = Arrays.asList(80, 100);
         Integer numberOfParticles = 80;
 
-        final ActorSystem<Guardian> system =
+        // The types in the guardian need to be changed
+
+        final ActorSystem<Guardian.Command> system =
                 ActorSystem.create(Guardian.create(latticeProperties, numberOfParticles), "guardian");
+
+        system.tell(new Guardian.InitialiseNodes());
 
         system.terminate();
 
