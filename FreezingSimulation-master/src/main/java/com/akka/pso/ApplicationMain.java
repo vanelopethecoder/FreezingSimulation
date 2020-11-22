@@ -15,7 +15,7 @@ public class ApplicationMain {
 
         Kamon.init();
         List<Integer> latticeProperties = Arrays.asList(80, 100);
-        Integer numberOfParticles = 80;
+        Integer numberOfParticles = 100;
 
         // The types in the guardian need to be changed
 

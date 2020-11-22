@@ -21,9 +21,10 @@ public class Guardian {
 
     private List<Integer> latticeProperties;
     private int numberParticles;
-    int xMax;
-    int yMax;
+    int xMax = 100;
+    int yMax = 100;
     int iteration;
+    public  static  final int  TOTAL_TOTAL_ITERATIONS = 100;
 
     interface Command {
     }
@@ -74,7 +75,7 @@ public class Guardian {
 
         for (int i = 0; i < this.numberParticles; i++) {
             ActorRef<NodeParticle.Request> nodeParticle =
-                    cxt.spawn(NodeParticle.create("Particle" + i, xMax, yMax), "name" + i);
+                    cxt.spawn(NodeParticle.create("Particle" + i, xMax, yMax, TOTAL_TOTAL_ITERATIONS), "name" + i);
             nodes.add(nodeParticle);
         //    nodeParticle.tell(new NodeParticle.RequestCalculateFitness());
         }
@@ -88,7 +89,7 @@ public class Guardian {
                                 .of(0,0,5)))) {
 
             nodes.forEach( node  ->
-                    node.tell(new NodeParticle.RequestCalculateFitness())
+                    node.tell(new NodeParticle.RequestCalculateFitness(iteration))
                     );
         }
 
