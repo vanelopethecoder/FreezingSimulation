@@ -190,19 +190,21 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 
         // you could make a generic method to make it listen again
 
-        buffer.stash(Request message);
+//               buffer.stash(Request message);
+//
 
+//        Behaviors.receive(Request.class)
+//                .onMessageEquals(CalculateFA_again.INSTANCE, () -> onCalculateFA(this.getContext(), Duration.ofMillis(3)))
+//                .build();
 
-                Behaviors.receive(Request.class)
-                .onMessageEquals(CalculateFA_again.INSTANCE, () -> onCalculateFA(this.getContext(), Duration.ofMillis(3)))
-                .build();
+      return   Behaviors.same();
 
     }
 
     private Behavior<Request> onCalculateFA(CalculateForceOfAttraction calculateForceOfAttraction,
                                             ActorContext<Request> context, Duration duration) {
 
-        // ctx.scheduleOnce(duration, ctx.getSelf(), Eat.INSTANCE);
+        // ctx.scheduleOnce(duration, ctx.getSelf(), Receive.INSTANCE);
         this.getContext().scheduleOnce(duration, context.getSelf(), UpdateMyVelocity.INSTANCE);
 
         // exception handling
@@ -227,19 +229,19 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 
         }
 
+//
+//        return Behaviors.withTimers(
+//                timers -> {
+//                    // State timeouts done with withTimers
+//                    timers.startSingleTimer("Timeout", UpdateMyVelocity.INSTANCE, Duration.ofSeconds(1));
+//                    return Behaviors.receive(Request.class)
+//                            .onMessage(UpdateMyVelocity.class, message -> activeOnFlushOrTimeout(data))
+//                            .build();
+//                });
 
-        return Behaviors.withTimers(
-                timers -> {
-                    // State timeouts done with withTimers
-                    timers.startSingleTimer("Timeout", UpdateMyVelocity.INSTANCE, Duration.ofSeconds(1));
-                    return Behaviors.receive(Request.class)
-                            .onMessage(UpdateMyVelocity.class, message -> activeOnFlushOrTimeout(data))
-                            .build();
-                });
-
-//        return Behaviors.receive(Request.class)
-//                .onMessageEquals(UpdateMyVelocity.INSTANCE, () -> updateParticleProperties(this.getContext(), Duration.ofMillis(5)))
-//                .build();
+        return Behaviors.receive(Request.class)
+                .onMessageEquals(UpdateMyVelocity.INSTANCE, () -> updateParticleProperties(this.getContext(), Duration.ofMillis(5)))
+                .build();
 
 
     }

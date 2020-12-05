@@ -29,8 +29,6 @@ public class Guardian {
     interface Command {
     }
 
-    ;
-
     static class InitialiseNodes implements Command {
         Boolean start = true;
 
