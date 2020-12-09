@@ -93,6 +93,8 @@ public class NodeParticleWithStates {
 
         if (this.countingStateAdjust == 2) {
 
+            // you unfortunately have to tell an actor that you're done, cause the main method doesn't have an address
+
         }
 
         return Behaviors.receive(SimpleState.class)

@@ -35,7 +35,7 @@ public class ApplicationTestFSM {
 
         // creating the particles
 
-        List<ActorRef<NodeParticleWithStates.SimpleState>> nodes = IntStream.rangeClosed(1, 5)
+        List<ActorRef<NodeParticleWithStates.SimpleState>> nodes = IntStream.rangeClosed(1, 100)
                 .mapToObj(i -> context.spawn(NodeParticleWithStates.create("node" + i), "node" + i))
                 .collect(Collectors.toList());
 
@@ -44,6 +44,10 @@ public class ApplicationTestFSM {
         for (ActorRef<NodeParticleWithStates.SimpleState> node : nodes) {
             node.tell(NodeParticleWithStates.Receive.INSTANCE);
         }
+
+
+        // create the state controller and send all the nodes here for now
+
         return Behaviors.empty();
 
     }
