@@ -2,6 +2,7 @@ package fsm;
 
 import NodeModels.NodeParticle;
 import NodeModels.ParticleProperties;
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -13,6 +14,7 @@ public class NodeParticleWithStates {
 
 
     public interface SimpleState {
+
     }
 
     // our 2 states
@@ -43,14 +45,19 @@ public class NodeParticleWithStates {
 
     private final ActorContext<SimpleState> ctx;
     private final String name;
+    ActorRef<StateController.Command> stateController;
 
-    public NodeParticleWithStates(ActorContext<SimpleState> ctx, String name) {
+    public NodeParticleWithStates(ActorContext<SimpleState> ctx, String name,
+                                  ActorRef<StateController.Command> stateController) {
+
         this.ctx = ctx;
         this.name = name;
+        this.stateController = stateController;
+
     }
 
-    public static Behavior<SimpleState> create(String name) {
-        return Behaviors.setup(ctx -> new NodeParticleWithStates(ctx, name).waiting());
+    public static Behavior<SimpleState> create(String name, ActorRef<StateController.Command> stateController) {
+        return Behaviors.setup(ctx -> new NodeParticleWithStates(ctx, name, stateController).waiting());
     }
 
 
@@ -93,7 +100,8 @@ public class NodeParticleWithStates {
 
         if (this.countingStateAdjust == 2) {
 
-            // you unfortunately have to tell an actor that you're done, cause the main method doesn't have an address
+            // you, unfortunately, have to tell an actor that you're done, cause the main method doesn't have an address
+            this.stateController.tell(StateController.IterationComplete.INSTANCE);
 
         }
 
