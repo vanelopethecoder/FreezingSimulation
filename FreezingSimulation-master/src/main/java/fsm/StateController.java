@@ -56,7 +56,8 @@ public class StateController {
         // spawning particles
 
         List<ActorRef<NodeParticleWithStates.SimpleState>> nodes = IntStream.rangeClosed(1, 100)
-                .mapToObj(i -> context.spawn(NodeParticleWithStates.create("node" + i, context.getSelf()), "node" + i))
+                .mapToObj(i -> context.spawn(NodeParticleWithStates.create("node" + i, context.getSelf(),
+                        100, 100), "node" + i))
                 .collect(Collectors.toList());
 
 
@@ -74,7 +75,6 @@ public class StateController {
                 .onMessage(IterationComplete.class, msg -> {
                     context.getLog().info("node is complete with single iteration");
 
-
                     if(currentIteration < this.totalIterations) {
 
                         for (ActorRef<NodeParticleWithStates.SimpleState> node : nodes) {
@@ -86,10 +86,5 @@ public class StateController {
                     return Behaviors.same();
                 })
                 .build();
-
     }
-
-
-
-
 }
