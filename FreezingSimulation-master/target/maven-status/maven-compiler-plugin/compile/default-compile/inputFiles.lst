@@ -1,6 +1,12 @@
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\NodeModels\NodeParticle.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\fsm\NodeParticleWithStates.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\fsm\StateController.java
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\ApplicationMain.java
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\Guardian.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\PingManager.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\fsm\ApplicationTestFSM.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\Pinger.java
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\Device.java
+X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\com\akka\pso\PingService.java
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\FunctionUtil.java
 X:\Masters projects\FreezingSimulation-master\FreezingSimulation-master\src\main\java\NodeModels\ParticleProperties.java

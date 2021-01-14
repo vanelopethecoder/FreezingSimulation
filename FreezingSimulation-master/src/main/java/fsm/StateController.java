@@ -43,6 +43,7 @@ public class StateController {
         this.ctx = ctx;
         this.name = name;
         this.currentIteration = 0;
+        this.totalIterations = 4;
     }
 
     // create
@@ -57,7 +58,7 @@ public class StateController {
 
         List<ActorRef<NodeParticleWithStates.SimpleState>> nodes = IntStream.rangeClosed(1, 100)
                 .mapToObj(i -> context.spawn(NodeParticleWithStates.create("node" + i, context.getSelf(),
-                        100, 100), "node" + i))
+                        100, 100, this.totalIterations, 100), "node" + i))
                 .collect(Collectors.toList());
 
 
@@ -75,7 +76,7 @@ public class StateController {
                 .onMessage(IterationComplete.class, msg -> {
                     context.getLog().info("node is complete with single iteration");
 
-                    if(currentIteration < this.totalIterations) {
+                    if(currentIteration <= this.totalIterations) {
 
                         for (ActorRef<NodeParticleWithStates.SimpleState> node : nodes) {
                             node.tell(NodeParticleWithStates.Receive.INSTANCE);

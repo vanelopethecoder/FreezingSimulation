@@ -114,7 +114,7 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
         public UpdateVelocity(Boolean localBest, Boolean globalBest, int iteration, int totalIterations) {
             this.localBest = localBest;
             this.globalBest = globalBest;
-            this.iteration = this.iteration;
+            this.iteration = iteration;
             this.totalIterations = totalIterations;
         }
     }
@@ -162,7 +162,8 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 
         //  if (response.localBest && !response.globalBest) {
 
-        System.out.println("PLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASSSSSSSSSSSSSSSSSSSSSEEEE");
+        System.out.println("PLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAASSSSSSSSSSSSSSSSSSSSSEEEE");
 
         this.getContext().scheduleOnce(duration, context.getSelf(), CalculateFA_again.INSTANCE);
 
@@ -209,7 +210,8 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 
         // exception handling
 
-        System.out.println("CONFIRMING THE CALCULATE FA PORTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("CONFIRMING THE CALCULATE FA PORTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
         BigDecimal sumVelocity = calculateForceOfAttraction.particleProperties.getVelocity()
                 .add(this.particleProperties.getVelocity());
@@ -240,9 +242,9 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 //                });
 
         return Behaviors.receive(Request.class)
-                .onMessageEquals(UpdateMyVelocity.INSTANCE, () -> updateParticleProperties(this.getContext(), Duration.ofMillis(5)))
+                .onMessageEquals(UpdateMyVelocity.INSTANCE, () -> updateParticleProperties(this.getContext(),
+                        Duration.ofMillis(5)))
                 .build();
-
 
     }
 

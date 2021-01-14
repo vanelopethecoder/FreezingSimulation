@@ -18,9 +18,7 @@ public class ApplicationTestFSM {
     }
 
     public static void main(String[] args) {
-
         ActorSystem.create(ApplicationTestFSM.create(), "ParticlesWithStates");
-
     }
 
     private final ActorContext<NotUsed> context;
@@ -33,24 +31,9 @@ public class ApplicationTestFSM {
 
     private Behavior<NotUsed> behavior() {
 
-        // creating the particles
-
-//        List<ActorRef<NodeParticleWithStates.SimpleState>> nodes = IntStream.rangeClosed(1, 100)
-//                .mapToObj(i -> context.spawn(NodeParticleWithStates.create("node" + i), "node" + i))
-//                .collect(Collectors.toList());
-
-        // tell them to start receiving now
-
-//        for (ActorRef<NodeParticleWithStates.SimpleState> node : nodes) {
-//            node.tell(NodeParticleWithStates.Receive.INSTANCE);
-//        }
-
         ActorRef<StateController.Command> stateController = context.spawn(StateController.create("ControlFreak"),
                 "ControlFreak");
 
-        // create the state controller and send all the nodes here for now
-
         return Behaviors.empty();
-
     }
 }
