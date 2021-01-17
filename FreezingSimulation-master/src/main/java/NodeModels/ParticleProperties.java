@@ -19,6 +19,18 @@ public class ParticleProperties {
     public ParticleProperties() {
     }
 
+    public List<BigDecimal> getPositionVector() {
+        return positionVector;
+    }
+
+    public void setP_best_properties(ParticleProperties p_best_properties) {
+        this.p_best_properties = p_best_properties;
+    }
+
+    public ParticleProperties getP_best_properties() {
+        return p_best_properties;
+    }
+
     public BigDecimal getVelocity() {
         return velocity;
     }

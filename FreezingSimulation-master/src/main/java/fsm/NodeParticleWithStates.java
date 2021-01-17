@@ -11,6 +11,7 @@ import akka.actor.typed.receptionist.Receptionist;
 import akka.actor.typed.receptionist.ServiceKey;
 import okhttp3.MultipartBody;
 import org.decimal4j.util.DoubleRounder;
+import scala.concurrent.impl.FutureConvertersImpl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,18 +36,20 @@ public class NodeParticleWithStates {
 
     int countingStateReceive = 0;
     int countingStateAdjust = 0;
-    ActorRef<SimpleState> pBest;
     ParticleProperties particleProperties;
     int iteration;
     int numberOfOtherParticles = 0;
     // we need the total iteration to compare to current and change state constraints
     int threshHold;
     int totalIterations;
+    BigDecimal fitness;
+    ActorRef<SimpleState> pBest;
+
 
     // node properties
 
     String myName;
-    BigDecimal fitness;
+
     private final ActorRef<Receptionist.Listing> listingResponseAdapter;
 
     public enum Receive implements SimpleState {
@@ -59,12 +62,13 @@ public class NodeParticleWithStates {
 
     public static class RequestCalculateFitness implements NodeParticleWithStates.SimpleState {
 
-        Map<NodeParticle, ParticleProperties> swarmParticles;
+        ParticleProperties particleProperties;
         int iteration;
         ActorRef<NodeParticleWithStates.SimpleState> node;
 
-        public RequestCalculateFitness(int iteration, ActorRef<NodeParticleWithStates.SimpleState> node, ParticleProperties particleProperties) {
-            this.swarmParticles = swarmParticles;
+        public RequestCalculateFitness(int iteration, ActorRef<NodeParticleWithStates.SimpleState> node,
+                                       ParticleProperties particleProperties) {
+            this.particleProperties = particleProperties;
             System.out.println("creating swarm particles");
             this.iteration = iteration;
             this.node = node;
@@ -90,6 +94,7 @@ public class NodeParticleWithStates {
         this.particleProperties.setX((int) (Math.random() * ((xMax) + 1)));
         this.particleProperties.setY((int) (Math.random() * ((yMax) + 1)));
         this.totalIterations = totalIterations;
+        this.fitness = BigDecimal.ZERO;
         this.iteration = 1;
         this.threshHold = threshHold;
         this.ctx = ctx;
@@ -172,7 +177,7 @@ public class NodeParticleWithStates {
         this.numberOfOtherParticles++;
         ctx.getLog().info(name + "has received this many particle properties : " + numberOfOtherParticles);
 
-        compareToLocalBest();
+        compareToLocalBest(response.particleProperties, response);
 
         // check the number of particles against the threshold
         if(this.numberOfOtherParticles >= this.threshHold){
@@ -185,10 +190,25 @@ public class NodeParticleWithStates {
         return Behaviors.same();
     }
 
-    private void compareToLocalBest() {
+    private void compareToLocalBest(ParticleProperties particleProperties, RequestCalculateFitness requestCalculateFitness ) {
+
+        // adding the 2 velocities
+        BigDecimal sumVelocity = particleProperties.getVelocity()
+                .add(this.particleProperties.getVelocity());
 
 
+        int euclideanDistance = (particleProperties.getX() - this.particleProperties.getX()) * (particleProperties.getX() - this.particleProperties.getX()) +
+                (particleProperties.getY() - particleProperties.getY()) * (particleProperties.getY() - particleProperties.getY());
 
+        BigDecimal fa = BigDecimal.valueOf(euclideanDistance).subtract(sumVelocity);
+
+        if ((this.fitness.compareTo(BigDecimal.ZERO) == 0) || (fa.compareTo(this.fitness) >= 0)) {
+            this.fitness = fa;
+            //   this.pBest = actor red, you need the actor reference.
+            this.pBest = requestCalculateFitness.node;
+            this.particleProperties.setP_best_properties(particleProperties);
+
+        }
     }
 
     private Behavior<SimpleState> onlisting(Receptionist.Listing msg, ActorContext<SimpleState> context) {
@@ -244,6 +264,16 @@ public class NodeParticleWithStates {
        // ctx.getLog().info("counting adjust state : " + countingStateAdjust);
 
         appendPropertiesToFile();
+
+        // is this just changing the velocity?
+        // the position also needs to be updated though
+        // figure out how the iteration affects it
+
+        BigDecimal newVel = this.particleProperties.getVelocity().subtract(BigDecimal.valueOf(/*this.iteration / this.totalIterations*/ 1 *
+                Math.sqrt(Math.pow(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX(), 2)
+                + Math.pow(this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY(), 2))));
+
+        this.particleProperties.setVelocity(newVel);
 
         // tell state controller that you're done
         this.stateController.tell(StateController.IterationComplete.INSTANCE);
