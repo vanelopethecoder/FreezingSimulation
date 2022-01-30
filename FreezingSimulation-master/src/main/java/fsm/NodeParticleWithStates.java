@@ -1,6 +1,5 @@
 package fsm;
 
-import NodeModels.NodeParticle;
 import NodeModels.ParticleProperties;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -42,9 +41,8 @@ public class NodeParticleWithStates {
     // we need the total iteration to compare to current and change state constraints
     int threshHold;
     int totalIterations;
-    BigDecimal fitness;
+    int fitness;
     ActorRef<SimpleState> pBest;
-
 
     // node properties
 
@@ -81,20 +79,24 @@ public class NodeParticleWithStates {
     ActorRef<StateController.Command> stateController;
 
     public NodeParticleWithStates(ActorContext<SimpleState> ctx, String name,
-                                  ActorRef<StateController.Command> stateController, int xMax, int yMax,
+                                  ActorRef<StateController.Command> stateController, int x, int y,
                                   int totalIterations, int threshHold) throws IOException {
 
         this.particleProperties = new ParticleProperties();
 
-        this.particleProperties.setVelocity(BigDecimal.valueOf(
-                DoubleRounder.round(Math.random() * (8 - 0.1 + 1) + 0.1, 2)));
+//        this.particleProperties.setVelocity(BigDecimal.valueOf(
+//                DoubleRounder.round(Math.random() * (8 - 0.1 + 1) + 0.1, 2)));
 
-        this.fitness = BigDecimal.ZERO;
-        this.myName = myName;
-        this.particleProperties.setX((int) (Math.random() * ((xMax) + 1)));
-        this.particleProperties.setY((int) (Math.random() * ((yMax) + 1)));
+        // make velocity a constant for now
+
+        this.particleProperties.setVelocity(2);
+
+        this.fitness = 0;
+        this.myName = name;
+        this.particleProperties.setMyName(myName);
+        this.particleProperties.setX(x);
+        this.particleProperties.setY(y);
         this.totalIterations = totalIterations;
-        this.fitness = BigDecimal.ZERO;
         this.iteration = 1;
         this.threshHold = threshHold;
         this.ctx = ctx;
@@ -117,7 +119,6 @@ public class NodeParticleWithStates {
         }
     }
 
-
     public static Behavior<SimpleState> create(String name, ActorRef<StateController.Command> stateController,
                                                int xMax, int yMax, int totalIterations, int threshHold) {
         return Behaviors.withStash(
@@ -135,7 +136,6 @@ public class NodeParticleWithStates {
                                 }
                         ));
     }
-
 
     /*
      *      state : waiting
@@ -159,7 +159,7 @@ public class NodeParticleWithStates {
     // This method is like the inbetween, just to schedule the message
 
     private Behavior<SimpleState> startReceiving(Duration duration) {
-        ctx.scheduleOnce(duration, ctx.getSelf(), Adjust.INSTANCE);
+//        ctx.scheduleOnce(duration, ctx.getSelf(), Adjust.INSTANCE);
         // Receive the properties of other particles
         broadcastProperties(ctx);
 
@@ -176,12 +176,18 @@ public class NodeParticleWithStates {
 
         this.numberOfOtherParticles++;
         ctx.getLog().info(name + "has received this many particle properties : " + numberOfOtherParticles);
+//
 
-        compareToLocalBest(response.particleProperties, response);
+        if(response.particleProperties.getMyName().equals(this.particleProperties.getMyName())) {
+            System.out.println("oki");
+        } else {
+
+            compareToLocalBest(response.particleProperties, response);
+        }
 
         // check the number of particles against the threshold
         if(this.numberOfOtherParticles >= this.threshHold){
-            ctx.getLog().info("The number of properties is >90");
+            ctx.getLog().info(this.name + " The number of properties is >100");
             ctx.getSelf().tell(Adjust.INSTANCE);
 
             return startAdjusting();
@@ -193,17 +199,17 @@ public class NodeParticleWithStates {
     private void compareToLocalBest(ParticleProperties particleProperties, RequestCalculateFitness requestCalculateFitness ) {
 
         // adding the 2 velocities
-        BigDecimal sumVelocity = particleProperties.getVelocity()
-                .add(this.particleProperties.getVelocity());
+        int sumVelocity = particleProperties.getVelocity() // 4
+                + (this.particleProperties.getVelocity());
 
 
-        int euclideanDistance = (particleProperties.getX() - this.particleProperties.getX()) * (particleProperties.getX() - this.particleProperties.getX()) +
-                (particleProperties.getY() - particleProperties.getY()) * (particleProperties.getY() - particleProperties.getY());
+        int euclideanDistance = (int) Math.sqrt((Math.pow(particleProperties.getX() - this.particleProperties.getX(), 2)) +
+                Math.pow(particleProperties.getY() - this.particleProperties.getY(), 2)); // 6
 
-        BigDecimal fa = BigDecimal.valueOf(euclideanDistance).subtract(sumVelocity);
+        int fa = euclideanDistance - sumVelocity; // 2
 
-        if ((this.fitness.compareTo(BigDecimal.ZERO) == 0) || (fa.compareTo(this.fitness) >= 0)) {
-            this.fitness = fa;
+        if ((this.fitness == 0) || (fa <= this.fitness)) {
+            this.fitness = fa; // fitness = 2
             //   this.pBest = actor red, you need the actor reference.
             this.pBest = requestCalculateFitness.node;
             this.particleProperties.setP_best_properties(particleProperties);
@@ -269,16 +275,57 @@ public class NodeParticleWithStates {
         // the position also needs to be updated though
         // figure out how the iteration affects it
 
-        BigDecimal newVel = this.particleProperties.getVelocity().subtract(BigDecimal.valueOf(/*this.iteration / this.totalIterations*/ 1 *
-                Math.sqrt(Math.pow(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX(), 2)
-                + Math.pow(this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY(), 2))));
+//        BigDecimal newVel = this.particleProperties.getVelocity().subtract(BigDecimal.valueOf(/*this.iteration / this.totalIterations*/ 1 *
+//                Math.sqrt(Math.pow(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX(), 2)
+//                + Math.pow(this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY(), 2))));
 
-        this.particleProperties.setVelocity(newVel);
+//        this.particleProperties.setVelocity(newVel);
+
+
 
         // tell state controller that you're done
-        this.stateController.tell(StateController.IterationComplete.INSTANCE);
 
 
+
+        if(this.particleProperties.getX() == this.particleProperties.getP_best_properties().getX() &&
+           this.particleProperties.getY() == this.particleProperties.getP_best_properties().getY())
+         {
+             this.particleProperties.setVelocity(0);
+
+        } else {
+
+            int x_direction;
+            int y_direction;
+
+            if(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX() != 0) {
+                 x_direction = (this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX()) /
+                        (Math.abs(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX()));
+            } else {
+                x_direction = 0;
+            }
+
+            if (this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY() != 0){
+                 y_direction = (this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY()) /
+                        (Math.abs(this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY()));
+            } else {
+                y_direction = 0;
+            }
+
+            int distance = (int) Math.sqrt(Math.pow(this.particleProperties.getP_best_properties().getX() - this.particleProperties.getX(), 2)
+                    + Math.pow(this.particleProperties.getP_best_properties().getY() - this.particleProperties.getY(), 2));
+
+            if (distance < this.particleProperties.getVelocity()) { // no
+                this.particleProperties.setVelocity(distance);
+            }
+//            this.particleProperties.setX(this.particleProperties.getX()+ direction*(this.particleProperties.getP_best_properties().getX()));
+//            this.particleProperties.setY(this.particleProperties.getY()+ direction*(this.particleProperties.getP_best_properties().getY()));
+
+            this.particleProperties.setX(this.particleProperties.getX()+ x_direction*(this.particleProperties.getP_best_properties().getVelocity()));
+            this.particleProperties.setY(this.particleProperties.getY()+ y_direction*(this.particleProperties.getP_best_properties().getVelocity()));
+
+        }
+
+        this.stateController.tell(new StateController.IterationComplete(this.name, this.particleProperties));
 
 //        if (this.countingStateAdjust >= 2) {
 //            this.countingStateAdjust = 0;
@@ -324,7 +371,7 @@ public class NodeParticleWithStates {
 
     public String toString() {
 
-        return String.format("%15s, %15d, %03f, %15d, %15d ", name, this.iteration,
+        return String.format("%15s, %15d, %03d, %15d, %15d ", name, this.iteration,
                 this.particleProperties.getVelocity(), this.particleProperties.getX(), this.particleProperties.getY());
 
     }

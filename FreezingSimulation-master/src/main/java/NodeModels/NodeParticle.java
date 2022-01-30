@@ -37,8 +37,9 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
         super(context);
         this.buffer = buffer;
         this.particleProperties = new ParticleProperties();
-        this.particleProperties.setVelocity(BigDecimal.valueOf(
-                DoubleRounder.round(Math.random() * (8 - 0.1 + 1) + 0.1, 2)));
+//        this.particleProperties.setVelocity(BigDecimal.valueOf(
+//                DoubleRounder.round(Math.random() * (8 - 0.1 + 1) + 0.1, 2)));
+        this.particleProperties.setVelocity(0);
 
         this.fitness = BigDecimal.ZERO;
         this.myName = myName;
@@ -169,17 +170,17 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
 
         // make sure that calculatFA requests get stashed
 
-        BigDecimal vel = this.particleProperties.getVelocity();
+        int  vel = this.particleProperties.getVelocity();
 
         // should i store the localBest values?
         // or should i ask for them afterwards?
         // im leaning towards storing their props
 
-        BigDecimal newVel = vel.subtract(BigDecimal.valueOf(/*this.iteration / this.totalIterations*/ 1 *
-                Math.pow(this.particleProperties.p_best_properties.x - this.x, 2)
-                + Math.pow(this.particleProperties.p_best_properties.y - this.y, 2)));
+//        int  newVel = (int) vel -
+//                Math.pow(this.particleProperties.p_best_properties.x - this.x, 2)
+//                + Math.pow(this.particleProperties.p_best_properties.y - this.y, 2);
 
-        this.particleProperties.setVelocity(newVel);
+        this.particleProperties.setVelocity(0);
 
         System.out.println("My name: " + myName + " updated velocity: " + this.particleProperties.getVelocity()  +
                 "  p_best_x = " + this.particleProperties.p_best_properties.x  + "  p_best_y = "  + this.particleProperties.p_best_properties.y
@@ -213,13 +214,13 @@ public class NodeParticle extends AbstractBehavior<NodeParticle.Request> {
         System.out.println("CONFIRMING THE CALCULATE FA PORTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-        BigDecimal sumVelocity = calculateForceOfAttraction.particleProperties.getVelocity()
-                .add(this.particleProperties.getVelocity());
+//        BigDecimal sumVelocity = calculateForceOfAttraction.particleProperties.getVelocity()
+//                .add(this.particleProperties.getVelocity());
 
         int euclideanDistance = (calculateForceOfAttraction.x - this.x) * (calculateForceOfAttraction.x - this.x) +
                 (calculateForceOfAttraction.y - this.y) * (calculateForceOfAttraction.y - this.y);
 
-        BigDecimal fa = BigDecimal.valueOf(euclideanDistance).subtract(sumVelocity);
+        BigDecimal fa = BigDecimal.valueOf(euclideanDistance).subtract(BigDecimal.ONE);
 
         // euclidean distance - (sum of velocities)
 

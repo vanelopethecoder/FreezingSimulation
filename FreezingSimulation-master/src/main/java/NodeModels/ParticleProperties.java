@@ -5,15 +5,24 @@ import java.util.List;
 
 public class ParticleProperties {
 
-    BigDecimal velocity;
+    int velocity;
     List<BigDecimal> positionVector;
     int x;
     int y;
+    String myName;
     ParticleProperties p_best_properties;
 
-    public ParticleProperties(BigDecimal velocity, List<BigDecimal> positionVector) {
+    public ParticleProperties(int velocity, List<BigDecimal> positionVector) {
         this.velocity = velocity;
         this.positionVector = positionVector;
+    }
+
+    public void setMyName(String myName) {
+        this.myName = myName;
+    }
+
+    public String getMyName() {
+        return myName;
     }
 
     public ParticleProperties() {
@@ -31,11 +40,11 @@ public class ParticleProperties {
         return p_best_properties;
     }
 
-    public BigDecimal getVelocity() {
+    public int getVelocity() {
         return velocity;
     }
 
-    public void setVelocity(BigDecimal velocity) {
+    public void setVelocity(int velocity) {
         this.velocity = velocity;
     }
 
